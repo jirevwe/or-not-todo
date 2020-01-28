@@ -38,10 +38,13 @@ const env = {
   gateman_key: process.env.GATEMAN_KEY,
   mongodb_url: process.env.MONGODB_URL,
   redis_password: process.env.REDIS_PASSWORD,
+  slack_bot_token: process.env.SLACK_BOT_TOKEN,
+  worker_port: Number(process.env.WORKER_PORT),
   app_env: process.env.NODE_ENV || 'development',
   api_version: process.env.API_VERSION || '/api/v1',
   salt_rounds: Number(process.env.SALT_ROUNDS) || 10,
-  service_name: process.env.SERVICE_NAME || 'work-sheet'
+  service_name: process.env.SERVICE_NAME || 'work-sheet',
+  slack_signing_secret: process.env.SLACK_SIGNING_SECRET
 };
 
 const missingVariables = requiredVariables.reduce((acc, variable) => {
