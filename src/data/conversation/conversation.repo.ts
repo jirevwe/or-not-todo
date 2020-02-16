@@ -31,8 +31,8 @@ export class ConversationRepository extends BaseRepository<IConversationModel> {
    * Returns the conversation or null
    * @param conversation_id the conversation id
    */
-  async getCurrentConversation() {
-    const query = { time_ended: undefined };
+  async getConversation(slack_user_id: string) {
+    const query = { time_ended: undefined, slack_user_id };
     return await this.model.findOne(query).lean();
   }
 }
@@ -40,4 +40,4 @@ export class ConversationRepository extends BaseRepository<IConversationModel> {
 /**
  * Wallet Repository class instance shared across the app.
  */
-export const ConversationRepo = new ConversationRepository();
+export const ConvoRepo = new ConversationRepository();

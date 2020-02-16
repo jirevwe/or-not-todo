@@ -1,16 +1,16 @@
-import { SchemaFactory, requiredTrimmedLowercaseString } from '@app/data/base';
+import { SchemaFactory, trimmedString } from '@app/data/base';
 
 export const MessageSchema = SchemaFactory({
-  conversation_id: { ...requiredTrimmedLowercaseString },
+  conversation_id: { ...trimmedString },
 
   // slack fields
-  type: { ...requiredTrimmedLowercaseString },
-  text: { ...requiredTrimmedLowercaseString },
-  user: { ...requiredTrimmedLowercaseString },
-  team: { ...requiredTrimmedLowercaseString },
-  channel: { ...requiredTrimmedLowercaseString },
-  time_sent: { ...requiredTrimmedLowercaseString },
-  channel_type: { ...requiredTrimmedLowercaseString },
-  client_msg_id: { ...requiredTrimmedLowercaseString },
-  event_time_sent: { ...requiredTrimmedLowercaseString }
+  type: { ...trimmedString },
+  text: { ...trimmedString },
+  user: { ...trimmedString },
+  team: { ...trimmedString },
+  channel: { ...trimmedString },
+  time_sent: { ...trimmedString },
+  channel_type: { ...trimmedString },
+  client_msg_id: { ...trimmedString },
+  event_time_sent: { ...trimmedString }
 });
