@@ -60,9 +60,9 @@ export const lowercaseString = {
 /**
  * Defines a schema type with lowercase that's required
  */
-export declare const requiredTrimmedLowercaseString: {
-  type: typeof SchemaTypes.String;
-  lowercase: boolean;
-  required: true;
-  trim: boolean;
+export const requiredTrimmedLowercaseString = {
+  type: SchemaTypes.String,
+  lowercase: true,
+  required: true,
+  trim: true
 };

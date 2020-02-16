@@ -1,57 +1,47 @@
 import { ConversationStore } from '@slack/bolt';
-import { IConversationModel, ConversationRepo } from '@app/data/conversation';
-import { IMessageModel, MessageRepo } from '@app/data/message';
+import { IConversationModel, ConvoRepo } from '@app/data/conversation';
+import { MessageRepo } from '@app/data/message';
 import { MyMessage } from './utils';
 
 /**
  * Keeps tractk of conversation state
  */
 class ConvoStore implements ConversationStore {
-  conversation: IConversationModel;
-  messages: IMessageModel[];
-
   async set(_: string, value: MyMessage): Promise<any> {
-    switch (value?.action) {
-      case 'start':
-        const convo = await this.startConvo();
+    const convo = await this.startConvo(value.message.user);
+    switch (value.action) {
+      case 'greet':
         await MessageRepo.create({ conversation_id: convo._id, ...value });
         break;
-      case 'step_1':
+      case 'prev_day_task':
         break;
       case 'end':
-        this.endConvo();
+        this.endConvo(value.message.user);
         break;
       default:
         return;
-    }
+    } 
   }
 
-  async get(_: string): Promise<any> {
-    // load the conversation
-    this.conversation = await ConversationRepo.getCurrentConversation();
-
-    // load and cache the messages
-    this.messages = await MessageRepo.getByConversationId(
-      this.conversation._id
-    );
+  async get(slack_user_id: string): Promise<IConversationModel> {
+    return await ConvoRepo.getConversation(slack_user_id);
   }
 
   /**
    * Starts a new conversation, creates a new conversation object
    * */
-  async startConvo(): Promise<IConversationModel> {
-    return this.conversation !== null
-      ? this.conversation
-      : await ConversationRepo.create({});
+  async startConvo(slack_user_id: string): Promise<IConversationModel> {
+    const convo = await ConvoRepo.getConversation(slack_user_id);
+    return convo !== null ? convo : await ConvoRepo.create({ slack_user_id });
   }
 
   /**
    * Ends a conversation
    * @param conversation_id conversation id
    */
-  async endConvo() {
-    return await ConversationRepo.updateWithOperators(
-      { time_ended: undefined },
+  async endConvo(slack_user_id: string) {
+    return await ConvoRepo.updateWithOperators(
+      { time_ended: undefined, slack_user_id },
       {
         $set: { time_ended: Date() }
       }

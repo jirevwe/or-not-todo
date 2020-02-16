@@ -1,18 +1,55 @@
 import { Context, MessageEvent } from '@slack/bolt';
 
-export type Action = 'start' | 'end' | 'step_1' | 'step_2' | 'step_3';
+export type ConversationEvent =
+  | 'greet'
+  | 'prev_day_task'
+  | 'prev_day_progress'
+  | 'curr_day_task'
+  | 'curr_day_progress'
+  | 'blockers'
+  | 'end';
 
-export type MyMessage = { action: Action; message: MessageEvent };
+export const ConversationState = [
+  'greet',
+  'prev_day_task',
+  'prev_day_progress',
+  'curr_day_task',
+  'curr_day_progress',
+  'blockers',
+  'end'
+];
+
+export enum ConversationEvents {
+  GREET = 'greet',
+
+  PREV_DAY_TASK = 'prev_day_task',
+  PREV_DAY_PROGRESS = 'prev_day_progress',
+
+  CURR_DAY_TASK = 'curr_day_task',
+  CURR_DAY_PROGRESS = 'curr_day_progress',
+
+  ANY_BLOCKERS = 'any_blockers',
+
+  END = 'end'
+}
+
+export type MyMessage = { action: ConversationEvent; message: MessageEvent };
 
 export interface SaveParams {
-  context: Context;
-  action: Action;
+  action: ConversationEvent;
   message: MessageEvent;
+  context: Context;
 }
 
 export const save = async (params: SaveParams) => {
-  return await params.context.updateConversation({
-    action: params.action,
-    ...params.message
-  });
+  const { context, ...rest } = params;
+  return await context.updateConversation(rest);
 };
+
+export async function tryCatch(fn: Function) {
+  try {
+    await fn();
+  } catch (error) {
+    throw error;
+  }
+}
