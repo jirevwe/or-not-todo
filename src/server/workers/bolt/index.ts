@@ -14,13 +14,15 @@ const bolt = new App({
 
 // initiates a new conversation
 bolt.message(/yo/i, async ({ context, message, say }) => {
-  await save({ context, action: 'start', message });
-  say(`Hey there <@${message.user}>!`);
-  say(`What did you do yestesday?`);
+  await save({ context, action: 'greet', message });
+  say(`Hey there <@${message.user}>!\nWhat did you do yestesday?`);
 });
 
-// initiates a new conversation
+// ends a conversation
 bolt.message(/yeah/i, async ({ context, message, say }) => {
+  const convo = await convoStore.get(message.user);
+  if (!convo || convo.state !== 'curr_day_progress') return;
+
   await save({ context, action: 'end', message });
   say(`Ok we're done, have a great day`);
 });
@@ -28,17 +30,17 @@ bolt.message(/yeah/i, async ({ context, message, say }) => {
 // asks for help
 bolt.message(/help/i, async ({ message, say }) => {
   say(
-    `How are you doing <@${message.user}>?
+    `Yo!!!, How are you doing <@${message.user}>?
     Send \`Yo\` if you want to add a new daily entry`
   );
 });
 
 // what did you do yestesday?
-bolt.message(/\w+/gi, async ({ context, message, say }) => {
-  await save({ context, action: 'step_1', message });
-  say(`oh nice`);
-});
+// bolt.message(/\w+/gi, async ({ context, message, say }) => {
+//   await save({ context, action: 'end', message });
+//   say(`oh nice`);
+// });
 
-bolt.error(error => console.error(error));
+bolt.error(error => logger.error(error));
 
 export default bolt;
