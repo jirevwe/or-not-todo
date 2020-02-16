@@ -1,45 +1,44 @@
-import { App } from '@slack/bolt';
+import { App, LogLevel } from '@slack/bolt';
 import env from '@app/common/config/env';
+import convoStore from './convoStore';
+import logger from './logger';
+import { save } from './utils';
 
 const bolt = new App({
+  logger,
+  convoStore,
+  logLevel: LogLevel.DEBUG,
   token: env.slack_bot_token,
   signingSecret: env.slack_signing_secret
 });
 
-// Listens to incoming messages that contain "hello"
-bolt.message('hello', ({ message, say }) => {
-  // say() sends a message to the channel where the event was triggered
+// initiates a new conversation
+bolt.message(/yo/i, async ({ context, message, say }) => {
+  await save({ context, action: 'start', message });
   say(`Hey there <@${message.user}>!`);
+  say(`What did you do yestesday?`);
 });
 
-// Listens to incoming messages that contain "hello"
-bolt.message('yo', ({ message, say }) => {
-  // say() sends a message to the channel where the event was triggered
-  say({
-    blocks: [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `Hey there <@${message.user}>!`
-        },
-        accessory: {
-          type: 'button',
-          text: {
-            type: 'plain_text',
-            text: 'Click Me'
-          },
-          action_id: 'button_click'
-        }
-      }
-    ]
-  });
+// initiates a new conversation
+bolt.message(/yeah/i, async ({ context, message, say }) => {
+  await save({ context, action: 'end', message });
+  say(`Ok we're done, have a great day`);
 });
 
-bolt.action('button_click', ({ body, ack, say }) => {
-  // Acknowledge the action
-  ack();
-  say(`<@${body.user.id}> clicked the button`);
+// asks for help
+bolt.message(/help/i, async ({ message, say }) => {
+  say(
+    `How are you doing <@${message.user}>?
+    Send \`Yo\` if you want to add a new daily entry`
+  );
 });
+
+// what did you do yestesday?
+bolt.message(/\w+/gi, async ({ context, message, say }) => {
+  await save({ context, action: 'step_1', message });
+  say(`oh nice`);
+});
+
+bolt.error(error => console.error(error));
 
 export default bolt;
