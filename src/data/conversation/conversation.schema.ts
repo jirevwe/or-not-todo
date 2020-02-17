@@ -11,7 +11,7 @@ export const ConversationSchema = SchemaFactory({
   slack_user_id: { ...requiredTrimmedLowercaseString },
   state: {
     ...requiredTrimmedLowercaseString,
-    enum: [...ConversationState],
+    enum: ConversationState,
     default: 'greet'
   }
 });
