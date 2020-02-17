@@ -1,4 +1,5 @@
-import { Context, MessageEvent } from '@slack/bolt';
+import { Context, MessageEvent, SayFn } from '@slack/bolt';
+import { Conversation } from './conversation';
 
 export type ConversationEvent =
   | 'greet'
@@ -6,7 +7,7 @@ export type ConversationEvent =
   | 'prev_day_progress'
   | 'curr_day_task'
   | 'curr_day_progress'
-  | 'blockers'
+  | 'any_blockers'
   | 'end';
 
 export const ConversationState = [
@@ -15,7 +16,7 @@ export const ConversationState = [
   'prev_day_progress',
   'curr_day_task',
   'curr_day_progress',
-  'blockers',
+  'any_blockers',
   'end'
 ];
 
@@ -41,9 +42,20 @@ export interface SaveParams {
   context: Context;
 }
 
-export const save = async (params: SaveParams) => {
-  const { context, ...rest } = params;
-  return await context.updateConversation(rest);
+/**
+ * Processes the message sent to bolt when any text that matches (\w+)
+ * @param message the bolt message
+ * @param say the SayFn used to reply to the user
+ */
+export const processMessage = async (message: MessageEvent, say: SayFn) => {
+  const conversation = new Conversation(message.user);
+  const savedMessage = await conversation.saveMessage(message);
+  const reply = await conversation.say();
+  say(reply);
+  const updatedConversation = await conversation.updateState();
+
+  if (updatedConversation.state === 'end') await conversation.endConvo();
+  return { reply, message: savedMessage, conversation: updatedConversation };
 };
 
 export async function tryCatch(fn: Function) {
