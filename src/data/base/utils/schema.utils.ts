@@ -10,8 +10,8 @@ export const readMapper = {
     transform: (doc, ret, options) => {
       if (ret.password) delete ret.password;
       return ret;
-    },
-  },
+    }
+  }
 };
 
 /**
@@ -20,8 +20,8 @@ export const readMapper = {
 export const timestamps = {
   timestamps: {
     createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+    updatedAt: 'updated_at'
+  }
 };
 
 /**
@@ -29,7 +29,7 @@ export const timestamps = {
  */
 export const uuid = {
   type: SchemaTypes.String,
-  default: generateUUID,
+  default: generateUUID
 };
 
 /**
@@ -38,7 +38,7 @@ export const uuid = {
 export const trimmedLowercaseString = {
   type: SchemaTypes.String,
   trim: true,
-  lowercase: true,
+  lowercase: true
 };
 
 /**
@@ -46,7 +46,7 @@ export const trimmedLowercaseString = {
  */
 export const trimmedString = {
   type: SchemaTypes.String,
-  trim: true,
+  trim: true
 };
 
 /**
@@ -54,5 +54,15 @@ export const trimmedString = {
  */
 export const lowercaseString = {
   type: SchemaTypes.String,
+  lowercase: true
+};
+
+/**
+ * Defines a schema type with lowercase that's required
+ */
+export const requiredTrimmedLowercaseString = {
+  type: SchemaTypes.String,
   lowercase: true,
+  required: true,
+  trim: true
 };

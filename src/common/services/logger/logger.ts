@@ -19,8 +19,8 @@ class Logger implements ILogger {
       serializers: {
         err: errSerializer,
         res: resSerializer,
-        req: reqSerializer,
-      },
+        req: reqSerializer
+      }
     });
 
     /**
@@ -78,7 +78,7 @@ class Logger implements ILogger {
   logAPIResponse(req: Request, res: Response) {
     this.log.info({
       res,
-      req,
+      req
     });
   }
 
@@ -93,7 +93,7 @@ class Logger implements ILogger {
     this.log.error({
       err,
       res,
-      req,
+      req
     });
   }
 }
