@@ -10,6 +10,7 @@
     "start:worker": "node ./dist/server/workers/index",
     "start:worker:dev": "nodemon ./dist/server/workers/index --ignore ./dist/server/index | bunyan",
     "start:worker:debug": "nodemon --inspect ./dist/server/workers/index --ignore ./dist/server/index",
+    "postinstall": "tsc -p ./tsconfig.json",
     "watch:tsc": "tsc --watch -p ./tsconfig.json",
     "build:tsc": "tsc -p ./tsconfig.json",
     "test": "jest --runInBand",
