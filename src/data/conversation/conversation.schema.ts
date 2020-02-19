@@ -1,7 +1,18 @@
-import { SchemaFactory, requiredTrimmedLowercaseString } from '@app/data/base';
-import { SchemaTypes } from 'mongoose';
+import {
+  SchemaFactory,
+  requiredTrimmedLowercaseString,
+  trimmedLowercaseString
+} from '@app/data/base';
+import { SchemaTypes, Schema } from 'mongoose';
 import generateUUID from 'uuid/v4';
 import { ConversationState } from '@app/server/workers/bolt/utils';
+
+export const ConversationMessageSchema = new Schema({
+  _id: { ...requiredTrimmedLowercaseString, default: generateUUID },
+  question: { ...requiredTrimmedLowercaseString, required: true },
+  reply: { ...trimmedLowercaseString },
+  index: { type: SchemaTypes.Number }
+});
 
 export const ConversationSchema = SchemaFactory({
   time_ended: { type: SchemaTypes.Date },
@@ -9,6 +20,7 @@ export const ConversationSchema = SchemaFactory({
 
   conversation_id: { ...requiredTrimmedLowercaseString, default: generateUUID },
   slack_user_id: { ...requiredTrimmedLowercaseString },
+  messages: [ConversationMessageSchema],
   state: {
     ...requiredTrimmedLowercaseString,
     enum: ConversationState,
