@@ -73,9 +73,9 @@ export interface SaveParams {
  */
 export const processMessage = async (message: MessageEvent, say: SayFn) => {
   const conversation = new Conversation(message.user);
-  const savedMessage = await conversation.saveMessage(message);
   const reply = await conversation.say();
   say(reply);
+  const savedMessage = await conversation.saveMessage(message);
   const updatedConversation = await conversation.updateState();
 
   if (updatedConversation.state === 'end') await conversation.endConvo();
