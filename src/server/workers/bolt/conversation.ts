@@ -1,13 +1,15 @@
-import { ConversationState } from './utils';
+import { ConversationState, messages } from './utils';
 import { IConversationModel, ConvoRepo } from '@app/data/conversation';
 import { MessageRepo } from '@app/data/message';
 import { MessageEvent } from '@slack/bolt';
 
 export class Conversation {
   user: string;
+  baseQuery: any;
 
   constructor(user: string) {
     this.user = user;
+    this.baseQuery = { time_ended: undefined, slack_user_id: this.user };
   }
 
   // gets a message that is returned to the user
@@ -43,9 +45,8 @@ export class Conversation {
   // updates the current state of the conversation
   async updateState(): Promise<IConversationModel> {
     const { nextState: state } = await this.getState();
-    const query = { time_ended: undefined, slack_user_id: this.user };
     const update = { $set: { state } };
-    return await ConvoRepo.updateWithOperators(query, update);
+    return await ConvoRepo.updateWithOperators(this.baseQuery, update);
   }
 
   /**
@@ -53,7 +54,13 @@ export class Conversation {
    * @param value the slack message details
    */
   async saveMessage(value: MessageEvent) {
-    const convo = await this.getConvo();
+    const currentState = (await this.getConvo()).state;
+    const index = ConversationState.indexOf(currentState);
+
+    const query = { ...this.baseQuery, 'messages.index': index };
+    const update = { $set: { 'messages.$.reply': value.text } };
+
+    const convo = await ConvoRepo.updateWithOperators(query, update);
     return await MessageRepo.create({ conversation_id: convo._id, ...value });
   }
 
@@ -63,7 +70,7 @@ export class Conversation {
   async getConvo(): Promise<IConversationModel> {
     const convo = await ConvoRepo.getConversation(this.user);
     return convo === null
-      ? await ConvoRepo.create({ slack_user_id: this.user })
+      ? await ConvoRepo.create({ slack_user_id: this.user, messages })
       : convo;
   }
 
@@ -72,9 +79,7 @@ export class Conversation {
    * @param conversation_id conversation id
    */
   async endConvo() {
-    const query = { time_ended: undefined, slack_user_id: this.user };
     const update = { $set: { time_ended: Date() } };
-
-    return await ConvoRepo.updateWithOperators(query, update);
+    return await ConvoRepo.updateWithOperators(this.baseQuery, update);
   }
 }

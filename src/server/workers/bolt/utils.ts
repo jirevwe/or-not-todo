@@ -34,6 +34,30 @@ export enum ConversationEvents {
   END = 'end'
 }
 
+export const messages = Object.seal([
+  { index: 0, question: 'What did you do yestesday :thinking_face:?' },
+  {
+    index: 1,
+    question: 'What percentage of it were you able to complete :eye:?'
+  },
+  {
+    index: 2,
+    question: 'what are you working on today :thinking_face:?'
+  },
+  {
+    index: 3,
+    question: 'What part of it do you hope to achieve :thinking_face:?'
+  },
+  {
+    index: 4,
+    question: 'Do you have any challenges :full_moon_with_face:?'
+  },
+  {
+    index: 5,
+    question: 'Lit, do have a great day!!!'
+  }
+]);
+
 export type MyMessage = { action: ConversationEvent; message: MessageEvent };
 
 export interface SaveParams {
@@ -49,10 +73,10 @@ export interface SaveParams {
  */
 export const processMessage = async (message: MessageEvent, say: SayFn) => {
   const conversation = new Conversation(message.user);
-  const savedMessage = await conversation.saveMessage(message);
   const reply = await conversation.say();
-  say(reply);
+  const savedMessage = await conversation.saveMessage(message);
   const updatedConversation = await conversation.updateState();
+  say(reply);
 
   if (updatedConversation.state === 'end') await conversation.endConvo();
   return { reply, message: savedMessage, conversation: updatedConversation };
