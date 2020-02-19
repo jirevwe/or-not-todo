@@ -12,7 +12,8 @@ const bolt = new App({
 
 bolt.message(/\w+/gi, async ({ message, say }) => {
   try {
-    await processMessage(message, say);
+    // omly process the message if it's sent in a DM.
+    if (message.channel === 'im') await processMessage(message, say);
   } catch (error) {
     logger.error(error);
   }
