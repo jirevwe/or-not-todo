@@ -1,5 +1,5 @@
 import db from '../src/server/db';
-import { processMessage } from '../src/server/workers/bolt/utils';
+import { processMessage } from '../src/server/workers/bolt/conversation';
 import { MessageEvent } from '@slack/bolt';
 import faker from 'faker';
 

@@ -1,7 +1,8 @@
 import { App, LogLevel } from '@slack/bolt';
 import env from '@app/common/config/env';
 import logger from './logger';
-import { processMessage } from './utils';
+import { processMessage } from './conversation';
+import redis from '@app/common/services/redis';
 
 const bolt = new App({
   logger,
@@ -12,8 +13,14 @@ const bolt = new App({
 
 bolt.message(/\w+/gi, async ({ message, say }) => {
   try {
+    const redisKey = `${message.channel_type}:${message.user}:${message.client_msg_id}`.toLowerCase();
+    const value = await redis.get(redisKey);
+
     // omly process the message if it's sent in a DM.
-    if (message.channel_type === 'im') await processMessage(message, say);
+    if (message.channel_type === 'im' && value === null) {
+      await processMessage(message, say);
+      await redis.set(redisKey, redisKey);
+    }
   } catch (error) {
     logger.error(error);
   }
