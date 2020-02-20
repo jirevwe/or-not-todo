@@ -1,5 +1,4 @@
-import { Context, MessageEvent, SayFn } from '@slack/bolt';
-import { Conversation } from './conversation';
+import { Context, MessageEvent } from '@slack/bolt';
 
 export type ConversationEvent =
   | 'greet'
@@ -65,22 +64,6 @@ export interface SaveParams {
   message: MessageEvent;
   context: Context;
 }
-
-/**
- * Processes the message sent to bolt when any text that matches (\w+)
- * @param message the bolt message
- * @param say the SayFn used to reply to the user
- */
-export const processMessage = async (message: MessageEvent, say: SayFn) => {
-  const conversation = new Conversation(message.user);
-  const reply = await conversation.say();
-  say(reply);
-  const savedMessage = await conversation.saveMessage(message);
-  const updatedConversation = await conversation.updateState();
-
-  if (updatedConversation.state === 'end') await conversation.endConvo();
-  return { reply, message: savedMessage, conversation: updatedConversation };
-};
 
 export async function tryCatch(fn: Function) {
   try {

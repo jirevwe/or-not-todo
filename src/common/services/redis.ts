@@ -24,16 +24,7 @@ export class RedisService {
   quit: () => Promise<void>;
 
   constructor() {
-    const productionOrStagingEnvironment = ['production', 'staging'].includes(
-      env.app_env
-    );
-
-    this.redis = redis.createClient({
-      url: env.redis_url,
-      ...(productionOrStagingEnvironment && {
-        password: String(env.redis_password),
-      }),
-    });
+    this.redis = redis.createClient({ url: env.redis_url });
 
     const commands = [
       'del',
@@ -46,7 +37,7 @@ export class RedisService {
       'hset',
       'set',
       'get',
-      'quit',
+      'quit'
     ];
 
     // Promisify all the specified commands
