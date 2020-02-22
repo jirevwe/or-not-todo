@@ -15,6 +15,9 @@ export const startWorker = async () => {
     // start agenda
     agenda.on('ready', () => logger.message('⏳  Standups Agenda ready'));
 
+    // run the job every midnight
+    await agenda.every('0 0 * * *', 'RESET_SESSIONS');
+
     // start Bolt
     await bolt.start(env.port);
     console.log(`⚡️ Bolt app is running on port ${env.port}!!!`);
