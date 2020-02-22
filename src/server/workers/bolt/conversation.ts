@@ -1,6 +1,8 @@
 import { ConversationState, messages } from './utils';
 import { IConversationModel, ConvoRepo } from '@app/data/conversation';
 import { MessageEvent, SayFn } from '@slack/bolt';
+import redis from '@app/common/services/redis';
+import { endOfToday, startOfToday } from 'date-fns';
 
 class Conversation {
   user: string;
@@ -89,11 +91,28 @@ class Conversation {
  */
 export const processMessage = async (message: MessageEvent, say: SayFn) => {
   const conversation = new Conversation(message.user);
+  const defaultReply: string =
+    "Haha... Smell you next time sucker!!!\n\nYou've completed today's standup, check back tomorrow";
+
+  const today = startOfToday().getTime();
+  const conversationKey = `${message.user}:${today}`.toLowerCase();
+  const value = await redis.get(conversationKey);
+  const timeTillEndOfDay = endOfToday().getTime() - new Date().getTime();
+  const duration = Math.ceil(timeTillEndOfDay / 1000);
+
+  if (value !== null) {
+    say(defaultReply);
+    return defaultReply;
+  }
+
   const reply = await conversation.say();
   say(reply);
   const savedMessage = await conversation.saveMessage(message);
   const updatedConversation = await conversation.updateState();
 
-  if (updatedConversation.state === 'end') await conversation.endConvo();
+  if (updatedConversation.state === 'end') {
+    await redis.set(conversationKey, conversationKey, 'EX', duration);
+    await conversation.endConvo();
+  }
   return { reply, message: savedMessage, conversation: updatedConversation };
 };

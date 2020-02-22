@@ -22,6 +22,7 @@ export class RedisService {
   ) => Promise<any>;
   get: (key: string) => Promise<string>;
   quit: () => Promise<void>;
+  flushall: (async: 'ASYNC') => Promise<string>;
 
   constructor() {
     this.redis = redis.createClient({ url: env.redis_url });
@@ -34,6 +35,7 @@ export class RedisService {
       'hdel',
       'hget',
       'hgetall',
+      'flushall',
       'hset',
       'set',
       'get',

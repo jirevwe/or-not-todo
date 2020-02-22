@@ -2,15 +2,21 @@ import db from '../src/server/db';
 import { processMessage } from '../src/server/workers/bolt/conversation';
 import { MessageEvent } from '@slack/bolt';
 import faker from 'faker';
+import redis from '../src/common/services/redis';
 
-beforeAll(async () => {
+beforeEach(async () => {
   await db.connect();
   await db.connection.dropDatabase();
+  await redis.flushall('ASYNC');
 }, 12000);
 
-afterAll(async () => {
+afterEach(async () => {
   await db.connection.dropDatabase();
   await db.disconnect();
+});
+
+afterAll(async () => {
+  await redis.quit();
 });
 
 const sayFn = (message: string) => {
@@ -37,7 +43,9 @@ it('completes a chat session', async () => {
 
   const replies = [];
   for (const chat of chats) {
-    replies.push((await chat).reply);
+    const sentChat = await chat;
+    // @ts-ignore
+    replies.push(typeof sentChat !== 'string' ? sentChat.reply : sentChat);
   }
 
   expect(replies[0]).toMatch(/What did you do yestesday :thinking_face:?/);
@@ -54,7 +62,7 @@ it('completes a chat session', async () => {
   expect(replies[5]).toMatch(/Lit, do have a great day!!!/);
 });
 
-it('completes a chat session', async () => {
+it('completes a chat session, replies with a generic message', async () => {
   const message: MessageEvent = {
     channel: faker.lorem.slug(),
     ts: faker.lorem.slug(),
@@ -69,21 +77,19 @@ it('completes a chat session', async () => {
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
     await processMessage(message, sayFn)
   ];
 
   const replies = [];
   for (const chat of chats) {
-    replies.push((await chat).conversation.state);
+    const sentChat = await chat;
+    replies.push(
+      // @ts-ignore
+      typeof sentChat !== 'string' ? sentChat.conversation.state : sentChat
+    );
   }
 
-  // confirm that both conversations ended
+  await processMessage(message, sayFn);
+
   expect(replies[5]).toMatch('end');
-  expect(replies[11]).toMatch('end');
 });

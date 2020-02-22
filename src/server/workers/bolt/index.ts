@@ -13,13 +13,13 @@ const bolt = new App({
 
 bolt.message(/\w+/gi, async ({ message, say }) => {
   try {
-    const redisKey = `${message.channel_type}:${message.user}:${message.client_msg_id}`.toLowerCase();
-    const value = await redis.get(redisKey);
+    const messageKey = `${message.channel_type}:${message.user}:${message.client_msg_id}`.toLowerCase();
+    const value = await redis.get(messageKey);
 
     // omly process the message if it's sent in a DM.
     if (message.channel_type === 'im' && value === null) {
       await processMessage(message, say);
-      await redis.set(redisKey, redisKey);
+      await redis.set(messageKey, messageKey, 'EX', 86400);
     }
   } catch (error) {
     logger.error(error);
