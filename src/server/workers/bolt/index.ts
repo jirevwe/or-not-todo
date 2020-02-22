@@ -3,6 +3,7 @@ import env from '@app/common/config/env';
 import logger from './logger';
 import { processMessage } from './conversation';
 import redis from '@app/common/services/redis';
+import endOfToday = require('date-fns/end_of_today');
 
 const bolt = new App({
   logger,
@@ -19,7 +20,10 @@ bolt.message(/\w+/gi, async ({ message, say }) => {
     // omly process the message if it's sent in a DM.
     if (message.channel_type === 'im' && value === null) {
       await processMessage(message, say);
-      await redis.set(messageKey, messageKey, 'EX', 86400);
+
+      const timeTillEndOfDay = endOfToday().getTime() - new Date().getTime();
+      const duration = Math.ceil(timeTillEndOfDay / 1000);
+      await redis.set(messageKey, messageKey, 'EX', duration);
     }
   } catch (error) {
     logger.error(error);

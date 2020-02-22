@@ -3,6 +3,8 @@ import { processMessage } from '../src/server/workers/bolt/conversation';
 import { MessageEvent } from '@slack/bolt';
 import faker from 'faker';
 import redis from '../src/common/services/redis';
+import timekeeper from 'timekeeper';
+import { addDays } from 'date-fns';
 
 beforeEach(async () => {
   await db.connect();
@@ -92,4 +94,48 @@ it('completes a chat session, replies with a generic message', async () => {
   await processMessage(message, sayFn);
 
   expect(replies[5]).toMatch('end');
+});
+
+it('it clears all the sessions after midnight', async () => {
+  const message: MessageEvent = {
+    channel: faker.lorem.slug(),
+    ts: faker.lorem.slug(),
+    type: 'message',
+    user: 'RT',
+    text: faker.lorem.slug()
+  };
+
+  const chats = [
+    await processMessage(message, sayFn),
+    await processMessage(message, sayFn),
+    await processMessage(message, sayFn),
+    await processMessage(message, sayFn),
+    await processMessage(message, sayFn),
+    await processMessage(message, sayFn)
+  ];
+
+  const replies = [];
+  for (const chat of chats) {
+    const sentChat = await chat;
+    replies.push(
+      // @ts-ignore
+      typeof sentChat !== 'string' ? sentChat.conversation.state : sentChat
+    );
+  }
+
+  // send another message
+  await processMessage(message, sayFn);
+
+  expect(replies[5]).toMatch('end');
+
+  // travel tio this time tomorrow
+  timekeeper.travel(addDays(new Date(), 1));
+
+  // send a message tomorrow
+  const tomorrowsChat = await processMessage(message, sayFn);
+
+  // @ts-ignore
+  expect(tomorrowsChat.reply).toMatch(
+    /What did you do yestesday :thinking_face:?/
+  );
 });
