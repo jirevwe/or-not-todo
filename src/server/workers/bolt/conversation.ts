@@ -116,3 +116,17 @@ export const processMessage = async (message: MessageEvent, say: SayFn) => {
   }
   return { reply, message: savedMessage, conversation: updatedConversation };
 };
+
+export const triggerStandup = async (message?: MessageEvent, say?: SayFn) => {
+  const messageKey = `${message.channel_type}:${message.user}:${message.client_msg_id}`.toLowerCase();
+  const value = await redis.get(messageKey);
+
+  // omly process the message if it's sent in a DM.
+  if (message.channel_type === 'im' && value === null) {
+    await processMessage(message, say);
+
+    const timeTillEndOfDay = endOfToday().getTime() - new Date().getTime();
+    const duration = Math.ceil(timeTillEndOfDay / 1000);
+    await redis.set(messageKey, messageKey, 'EX', duration);
+  }
+};
