@@ -25,7 +25,7 @@ export const startWorker = async () => {
     );
 
     // run the job every midnight
-    await sessionsAgenda.every('0 0 * * *', 'RESET_SESSIONS');
+    await sessionsAgenda.every('0 9 * * *', 'RESET_SESSIONS');
 
     // run this job at 9am daily
     await standUpsAgenda.every('0 9 * * *', 'TRIGGER_STANDUPS');

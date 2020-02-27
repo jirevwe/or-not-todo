@@ -3,6 +3,9 @@ import { IConversationModel, ConvoRepo } from '@app/data/conversation';
 import { MessageEvent, SayFn } from '@slack/bolt';
 import redis from '@app/common/services/redis';
 import { endOfToday, startOfToday } from 'date-fns';
+import env from '@app/common/config/env';
+import axios from 'axios';
+import { standUpResponse } from './blocks';
 
 export class Conversation {
   user: string;
@@ -93,6 +96,8 @@ export const processMessage = async (message: MessageEvent, say: SayFn) => {
   const conversation = new Conversation(message.user);
   const defaultReply: string =
     "You've completed today's standup, check back tomorrow";
+  const getSendChatMessageUrl = (channel_id: string, the_message: any) =>
+    `${env.slack_post_message_url}?token=${env.slack_bot_token}&channel=${channel_id}&blocks=${the_message}&text=...`;
 
   const today = startOfToday().getTime();
   const conversationKey = `${message.user}:${today}`.toLowerCase();
@@ -112,6 +117,19 @@ export const processMessage = async (message: MessageEvent, say: SayFn) => {
   if (updatedConversation.state === 'end') {
     await redis.set(conversationKey, conversationKey, 'EX', duration);
     await conversation.endConvo();
+
+    const finalUrl = getSendChatMessageUrl(
+      env.slack_standups_channel,
+      encodeURIComponent(
+        JSON.stringify(
+          standUpResponse(message.user, updatedConversation.messages)
+        )
+      )
+    );
+
+    await axios.get(finalUrl, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
   return { message: savedMessage, conversation: updatedConversation };
 };
