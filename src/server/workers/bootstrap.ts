@@ -28,7 +28,7 @@ export const startWorker = async () => {
     await sessionsAgenda.every('0 0 * * *', 'RESET_SESSIONS');
 
     // run this job at 9am daily
-    await standUpsAgenda.every('* * * * *', 'TRIGGER_STANDUPS');
+    await standUpsAgenda.every('0 9 * * *', 'TRIGGER_STANDUPS');
 
     // start Bolt
     await bolt.start(env.port);

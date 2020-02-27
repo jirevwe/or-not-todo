@@ -4,7 +4,7 @@ import { MessageEvent, SayFn } from '@slack/bolt';
 import redis from '@app/common/services/redis';
 import { endOfToday, startOfToday } from 'date-fns';
 
-class Conversation {
+export class Conversation {
   user: string;
   baseQuery: any;
 
@@ -31,7 +31,7 @@ class Conversation {
       case 'any_blockers':
         return `Lit, do have a great day!!!`;
       default:
-        return 'Wait... Huhn??';
+        return "You've completed today's standup, check back tomorrow";
     }
   }
 
@@ -92,7 +92,7 @@ class Conversation {
 export const processMessage = async (message: MessageEvent, say: SayFn) => {
   const conversation = new Conversation(message.user);
   const defaultReply: string =
-    "Haha... Smell you next time sucker!!!\n\nYou've completed today's standup, check back tomorrow";
+    "You've completed today's standup, check back tomorrow";
 
   const today = startOfToday().getTime();
   const conversationKey = `${message.user}:${today}`.toLowerCase();
@@ -105,16 +105,15 @@ export const processMessage = async (message: MessageEvent, say: SayFn) => {
     return defaultReply;
   }
 
-  const reply = await conversation.say();
-  say(reply);
   const savedMessage = await conversation.saveMessage(message);
   const updatedConversation = await conversation.updateState();
+  say(await conversation.say());
 
   if (updatedConversation.state === 'end') {
     await redis.set(conversationKey, conversationKey, 'EX', duration);
     await conversation.endConvo();
   }
-  return { reply, message: savedMessage, conversation: updatedConversation };
+  return { message: savedMessage, conversation: updatedConversation };
 };
 
 export const triggerStandup = async (message?: MessageEvent, say?: SayFn) => {
