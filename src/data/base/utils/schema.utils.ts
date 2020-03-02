@@ -66,3 +66,12 @@ export const requiredTrimmedLowercaseString = {
   required: true,
   trim: true
 };
+
+/**
+ * Defines a schema type that's required
+ */
+export const requiredTrimmedString = {
+  type: SchemaTypes.String,
+  required: true,
+  trim: true
+};
