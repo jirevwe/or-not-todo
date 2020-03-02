@@ -35,9 +35,27 @@ export class ConversationRepository extends BaseRepository<IConversationModel> {
     const query = { time_ended: undefined, slack_user_id };
     return await this.model.findOne(query).lean();
   }
+
+  async resetConversations() {
+    const query = { time_ended: undefined };
+    const conversations = await this.model.find(query).lean();
+
+    const status = [];
+    for (const con of conversations) {
+      const _query = { ...query, conversation_id: con.conversation_id };
+      const update = { $set: { time_ended: Date() } };
+      const updatedConvo = await ConvoRepo.updateWithOperators(_query, update);
+      status.push({
+        time_ended: updatedConvo.time_ended,
+        conversation_id: updatedConvo.conversation_id
+      });
+    }
+
+    return status;
+  }
 }
 
 /**
- * Wallet Repository class instance shared across the app.
+ * COnverasation Repository class instance shared across the app.
  */
 export const ConvoRepo = new ConversationRepository();

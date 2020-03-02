@@ -5,6 +5,7 @@ import logger from '@app/common/services/logger';
 import axios from 'axios';
 import env from '@app/common/config/env';
 import { Conversation } from '../bolt/conversation';
+import { ConvoRepo } from '@app/data/conversation';
 
 const resetSessions = async (job: Job<any>, done: (err?: Error) => void) => {
   const { name } = job.attrs;
@@ -12,7 +13,9 @@ const resetSessions = async (job: Job<any>, done: (err?: Error) => void) => {
 
   try {
     await redis.flushall('ASYNC');
+    const finished = await ConvoRepo.resetConversations();
     logger.message('standup records cleared');
+    logger.message({ finished });
     done();
   } catch (error) {
     logger.error(error, {
