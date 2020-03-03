@@ -114,7 +114,7 @@ export const processMessage = async (message: MessageEvent, say: SayFn) => {
   const updatedConversation = await conversation.updateState();
   say(await conversation.say());
 
-  if (updatedConversation.state === 'end') {
+  if (updatedConversation.state === 'any_blockers') {
     await redis.set(conversationKey, conversationKey, 'EX', duration);
     await conversation.endConvo();
 
