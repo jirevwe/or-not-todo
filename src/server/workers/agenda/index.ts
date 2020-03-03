@@ -36,7 +36,7 @@ const triggerStandups = async (job: Job<any>, done: (err?: Error) => void) => {
 
   try {
     const { data } = await axios.get(getChannelmembersUrl);
-    const members = data.members.filter(it => it !== 'usr96e9my');
+    const members = data.members.filter(it => it !== 'USR96E9MY');
 
     for (const member of members) {
       const conversation = new Conversation(member);
