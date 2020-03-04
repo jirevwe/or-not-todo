@@ -5,6 +5,7 @@ import faker from 'faker';
 import redis from '../src/common/services/redis';
 import timekeeper from 'timekeeper';
 import { addDays } from 'date-fns';
+import { Conversation } from '../src/server/workers/bolt/conversation';
 
 beforeEach(async () => {
   await db.connect();
@@ -26,6 +27,9 @@ const sayFn = (message: string) => {
 };
 
 it('completes a chat session', async () => {
+  let conversation = new Conversation('RT');
+  sayFn(await conversation.say());
+
   const message: MessageEvent = {
     channel: faker.lorem.slug(),
     ts: faker.lorem.slug(),
@@ -38,33 +42,43 @@ it('completes a chat session', async () => {
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
     await processMessage(message, sayFn)
   ];
 
-  const replies = [];
-  for (const chat of chats) {
-    const sentChat = await chat;
-    // @ts-ignore
-    replies.push(typeof sentChat !== 'string' ? sentChat.reply : sentChat);
-  }
+  for (const chat of chats) await chat;
 
-  expect(replies[0]).toMatch(/What did you do yestesday :thinking_face:?/);
-  expect(replies[1]).toMatch(
+  const reply = await processMessage(message, sayFn);
+  const replies =
+    typeof reply !== 'string' ? reply.conversation.messages : reply;
+
+  //@ts-ignore
+  expect(replies[0].question).toMatch(
+    /What did you do yestesday :thinking_face:?/
+  );
+  //@ts-ignore
+  expect(replies[1].question).toMatch(
     /What percentage of it were you able to complete :eye:?/
   );
-  expect(replies[2]).toMatch(/what are you working on today :thinking_face:?/);
-  expect(replies[3]).toMatch(
+  //@ts-ignore
+  expect(replies[2].question).toMatch(
+    /what are you working on today :thinking_face:?/
+  );
+  //@ts-ignore
+  expect(replies[3].question).toMatch(
     /What part of it do you hope to achieve :thinking_face:?/
   );
-  expect(replies[4]).toMatch(
+  //@ts-ignore
+  expect(replies[4].question).toMatch(
     /Do you have any challenges :full_moon_with_face:?/
   );
-  expect(replies[5]).toMatch(/Lit, do have a great day!!!/);
+  //@ts-ignore
+  expect(replies[5].question).toMatch(/Lit, do have a great day!!!/);
 });
 
 it('completes a chat session, replies with a generic message', async () => {
+  let conversation = new Conversation('RT');
+  sayFn(await conversation.say());
+
   const message: MessageEvent = {
     channel: faker.lorem.slug(),
     ts: faker.lorem.slug(),
@@ -78,25 +92,21 @@ it('completes a chat session, replies with a generic message', async () => {
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
     await processMessage(message, sayFn)
   ];
 
-  const replies = [];
-  for (const chat of chats) {
-    const sentChat = await chat;
-    replies.push(
-      // @ts-ignore
-      typeof sentChat !== 'string' ? sentChat.conversation.state : sentChat
-    );
-  }
+  for (const chat of chats) await chat;
 
-  await processMessage(message, sayFn);
-
-  expect(replies[5]).toMatch('end');
+  const reply = await processMessage(message, sayFn);
+  expect(reply).toMatch(
+    /You've completed today's standup, check back tomorrow/
+  );
 });
 
 it('it clears all the sessions after midnight', async () => {
+  let conversation = new Conversation('RT');
+  sayFn(await conversation.say());
+
   const message: MessageEvent = {
     channel: faker.lorem.slug(),
     ts: faker.lorem.slug(),
@@ -110,32 +120,28 @@ it('it clears all the sessions after midnight', async () => {
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
     await processMessage(message, sayFn),
-    await processMessage(message, sayFn),
     await processMessage(message, sayFn)
   ];
 
-  const replies = [];
-  for (const chat of chats) {
-    const sentChat = await chat;
-    replies.push(
-      // @ts-ignore
-      typeof sentChat !== 'string' ? sentChat.conversation.state : sentChat
-    );
-  }
+  for (const chat of chats) await chat;
 
-  // send another message
-  await processMessage(message, sayFn);
+  const reply = await processMessage(message, sayFn);
+  expect(reply).toMatch(
+    /You've completed today's standup, check back tomorrow/
+  );
 
-  expect(replies[5]).toMatch('end');
-
-  // travel tio this time tomorrow
+  // travel to this time tomorrow
   timekeeper.travel(addDays(new Date(), 1));
+
+  // start another conversation
+  conversation = new Conversation('RT');
+  sayFn(await conversation.say());
 
   // send a message tomorrow
   const tomorrowsChat = await processMessage(message, sayFn);
 
   // @ts-ignore
-  expect(tomorrowsChat.reply).toMatch(
+  expect(tomorrowsChat.conversation.messages[0].question).toMatch(
     /What did you do yestesday :thinking_face:?/
   );
 });

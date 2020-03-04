@@ -23,7 +23,8 @@ export const createMockTransactions = async (
   request: supertest.SuperTest<supertest.Test>,
   dateOffset: number = 1
 ) => {
-  const date = format(subDays(Date(), dateOffset), 'DD/MM/YYYY');
+  timekeeper.reset();
+  const date = format(subDays(new Date(), dateOffset), 'dd/MM/yyyy');
   timekeeper.travel(date);
 
   const requests = Array.from({ length: 10 }).map(() => {
@@ -32,5 +33,6 @@ export const createMockTransactions = async (
   });
 
   const tasks = await Promise.all(requests);
-  return tasks.map(it => it.body.data);
+
+  return { date, tasks: tasks.map(it => it.body.data) };
 };
