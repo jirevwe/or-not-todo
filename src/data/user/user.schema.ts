@@ -1,23 +1,19 @@
 import bcrypt from 'bcrypt';
-import {
-  trimmedString,
-  trimmedLowercaseString,
-  SchemaFactory
-} from '@app/data/base';
+import { trimmedString, SchemaFactory } from '@app/data/base';
 import { IUserModel } from './user.model';
 import env from '@app/common/config/env';
 
 const UserSchema = SchemaFactory({
   password: { ...trimmedString, required: true, select: false },
   email: {
-    ...trimmedLowercaseString,
+    ...trimmedString,
     unique: true,
     index: true,
     required: true
   },
-  first_name: { ...trimmedLowercaseString, required: true },
-  last_name: { ...trimmedLowercaseString },
-  middle_name: { ...trimmedLowercaseString },
+  first_name: { ...trimmedString, required: true },
+  last_name: { ...trimmedString },
+  middle_name: { ...trimmedString },
   profile_picture: { ...trimmedString },
   gender: { ...trimmedString, enum: ['male', 'female'] }
 });
