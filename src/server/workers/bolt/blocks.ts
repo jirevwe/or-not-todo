@@ -1,19 +1,23 @@
 import { ConversationMessage } from '@app/data/conversation';
-import { startOfToday, format } from 'date-fns';
+import { format } from 'date-fns';
 import { capitalize } from 'lodash';
 
 export const standUpResponse = (
+  time_started: Date,
   user_id: string,
   messages: ConversationMessage[]
 ) => [
   {
+    type: 'divider'
+  },
+  {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `> *<@${user_id}>'s Daily Stand-Up*\n>${format(
-        startOfToday(),
-        'YYYY-MM-DD'
-      )}`
+      text: `> *<@${user_id}>'s Daily Stand-Up for ${format(
+        time_started,
+        'eeee do MMMM, yyyy'
+      )}*`
     }
   },
   {
@@ -29,7 +33,7 @@ export const standUpResponse = (
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `> *${capitalize(messages[1].question)}\n>${capitalize(
+      text: `> *${capitalize(messages[1].question)}*\n>${capitalize(
         messages[1].reply.replace(/\n/g, '\n>').replace(/>>/g, '>')
       )}`
     }
