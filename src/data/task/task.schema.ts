@@ -1,20 +1,16 @@
-import {
-  trimmedLowercaseString,
-  SchemaFactory,
-  requiredTrimmedLowercaseString
-} from '../base';
+import { trimmedString, SchemaFactory, requiredTrimmedString } from '../base';
 
 export const taskGroupEnum = ['none', 'family', 'work', 'bills'];
 export const taskPriorityEnum = ['none', 'low', 'mid', 'high'];
 
 const taskGroup = {
-  ...trimmedLowercaseString,
+  ...requiredTrimmedString,
   enum: taskGroupEnum,
   default: 'none'
 };
 
 const priorityLevels = {
-  ...trimmedLowercaseString,
+  ...trimmedString,
   enum: taskPriorityEnum,
   default: 'none'
 };
@@ -22,11 +18,11 @@ const priorityLevels = {
 const TaskSchema = SchemaFactory({
   group: { ...taskGroup },
   priority: { ...priorityLevels },
-  tag: { ...trimmedLowercaseString },
-  end_date: { ...trimmedLowercaseString },
-  start_date: { ...trimmedLowercaseString },
-  name: { ...requiredTrimmedLowercaseString },
-  content: { ...requiredTrimmedLowercaseString }
+  tag: { ...trimmedString },
+  end_date: { ...trimmedString },
+  start_date: { ...trimmedString },
+  name: { ...requiredTrimmedString },
+  content: { ...requiredTrimmedString }
 });
 
 export default TaskSchema;

@@ -33,15 +33,6 @@ export const uuid = {
 };
 
 /**
- * Defines a schema type with a lowercased trimmed string
- */
-export const trimmedLowercaseString = {
-  type: SchemaTypes.String,
-  trim: true,
-  lowercase: true
-};
-
-/**
  * Defines a schema type with a trimmed string
  */
 export const trimmedString = {
@@ -55,16 +46,6 @@ export const trimmedString = {
 export const lowercaseString = {
   type: SchemaTypes.String,
   lowercase: true
-};
-
-/**
- * Defines a schema type with lowercase that's required
- */
-export const requiredTrimmedLowercaseString = {
-  type: SchemaTypes.String,
-  lowercase: true,
-  required: true,
-  trim: true
 };
 
 /**

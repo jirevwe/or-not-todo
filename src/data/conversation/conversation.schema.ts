@@ -1,7 +1,7 @@
 import {
   SchemaFactory,
   requiredTrimmedString,
-  trimmedLowercaseString
+  trimmedString
 } from '@app/data/base';
 import { SchemaTypes, Schema } from 'mongoose';
 import generateUUID from 'uuid/v4';
@@ -10,8 +10,8 @@ import { ConversationState } from '@app/server/workers/bolt/utils';
 export const ConversationMessageSchema = new Schema({
   _id: { ...requiredTrimmedString, default: generateUUID },
   question: { ...requiredTrimmedString, required: true },
-  reply: { ...trimmedLowercaseString },
-  index: { type: SchemaTypes.Number }
+  index: { type: SchemaTypes.Number },
+  reply: { ...trimmedString }
 });
 
 export const ConversationSchema = SchemaFactory({

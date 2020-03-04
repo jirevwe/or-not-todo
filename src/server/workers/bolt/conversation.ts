@@ -122,7 +122,11 @@ export const processMessage = async (message: MessageEvent, say: SayFn) => {
       env.slack_standups_channel,
       encodeURIComponent(
         JSON.stringify(
-          standUpResponse(message.user, updatedConversation.messages)
+          standUpResponse(
+            updatedConversation.time_started,
+            message.user,
+            updatedConversation.messages
+          )
         )
       )
     );

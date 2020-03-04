@@ -4,7 +4,7 @@ import App from '../src/server/app';
 import db from '../src/server/db';
 import { OK } from 'http-status-codes';
 import { mockTaskPayload, createMockTransactions } from './mocks';
-import { subDays, format } from 'date-fns';
+import { format, toDate } from 'date-fns';
 
 const baseUrl = '/api/v1/tasks';
 
@@ -83,18 +83,15 @@ it('deletes a task', async () => {
 
 it.only("gets all yesterday's tasks", async () => {
   // create tasks for yesterday and today
-  await createMockTransactions(request);
-  await createMockTransactions(request, 2);
-
-  const yesterday = format(subDays(Date(), 1), 'DD/MM/YYYY');
-  const today = format(subDays(Date(), 0), 'DD/MM/YYYY');
+  const { date: yesterday } = await createMockTransactions(request);
+  const { date: today } = await createMockTransactions(request, 2);
 
   const { body: todayTasks } = await request
     .get(`${baseUrl}?period=today`)
     .expect(OK);
 
   for (const task of todayTasks.data) {
-    const taskDate = format(subDays(task.created_at, 0), 'DD/MM/YYYY');
+    const taskDate = format(toDate(Date.parse(task.created_at)), 'dd/MM/yyyy');
     expect(taskDate).toBe(today);
   }
 
@@ -104,7 +101,7 @@ it.only("gets all yesterday's tasks", async () => {
     .expect(OK);
 
   for (const task of yesterdayTasks.data) {
-    const taskDate = format(subDays(task.created_at, 1), 'DD/MM/YYYY');
+    const taskDate = format(toDate(Date.parse(task.created_at)), 'dd/MM/yyyy');
     expect(taskDate).toBe(yesterday);
   }
 });
