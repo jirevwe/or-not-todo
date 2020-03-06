@@ -41,14 +41,6 @@ export const trimmedString = {
 };
 
 /**
- * Defines a schema type with a lowercased string
- */
-export const lowercaseString = {
-  type: SchemaTypes.String,
-  lowercase: true
-};
-
-/**
  * Defines a schema type that's required
  */
 export const requiredTrimmedString = {
