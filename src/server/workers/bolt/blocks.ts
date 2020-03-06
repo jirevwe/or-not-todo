@@ -29,6 +29,8 @@ export const standUpResponse = (
       }
     });
   }
+
+  return reply;
 };
 
 const escapeReply = (reply: string) =>
