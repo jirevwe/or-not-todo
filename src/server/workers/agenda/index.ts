@@ -6,6 +6,7 @@ import axios from 'axios';
 import env from '@app/common/config/env';
 import { Conversation } from '../bolt/conversation';
 import { ConvoRepo } from '@app/data/conversation';
+import { isWeekend } from 'date-fns';
 
 const resetSessions = async (job: Job<any>, done: (err?: Error) => void) => {
   const { name } = job.attrs;
@@ -26,6 +27,11 @@ const resetSessions = async (job: Job<any>, done: (err?: Error) => void) => {
 };
 
 const triggerStandups = async (job: Job<any>, done: (err?: Error) => void) => {
+  if (isWeekend(Date.now())) {
+    logger.message('Today is a weekend...');
+    done();
+  }
+
   const { name } = job.attrs;
   const jobName = name.toLowerCase();
 
